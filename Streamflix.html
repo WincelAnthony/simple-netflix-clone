@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Streamflix</title>
+<style>
+:root{--bg:#141414;--fg:#f5f5f5;--mut:#a3a3a3;--red:#e50914;--card:#222;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Helvetica Neue",Arial,sans-serif;overflow-x:hidden}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;display:flex;align-items:center;gap:20px;padding:14px 4%;background:linear-gradient(#000c,#0000)}
+nav.solid{background:#141414}
+.logo{color:var(--red);font-weight:900;font-size:26px;letter-spacing:-1px}
+nav button{background:none;border:0;color:var(--fg);font-size:14px;cursor:pointer;padding:4px}
+nav button.on{font-weight:700}
+nav input{margin-left:auto;background:#000a;border:1px solid #666;color:#fff;padding:7px 10px;border-radius:4px;width:180px;max-width:40vw}
+.hero{height:70vh;min-height:360px;margin-top:-56px;display:flex;align-items:flex-end;padding:0 4% 8%;background:linear-gradient(to top,var(--bg),#0000 50%),linear-gradient(90deg,#000a,#0000 70%),var(--g)}
+.hero div{max-width:520px}
+.hero h1{font-size:clamp(34px,6vw,64px);margin:0 0 10px}
+.hero p{color:#ddd;line-height:1.5;margin:0 0 18px}
+.btn{border:0;border-radius:4px;padding:10px 24px;font-size:16px;font-weight:700;cursor:pointer;margin-right:8px}
+.play{background:#fff;color:#000}.info{background:#6d6d6eb3;color:#fff}
+h2{font-size:20px;margin:26px 4% 10px}
+.row{display:flex;gap:8px;overflow-x:auto;padding:0 4% 10px;scrollbar-width:none}
+.row::-webkit-scrollbar{display:none}
+.card{flex:0 0 auto;width:170px;aspect-ratio:2/3;border-radius:6px;background:var(--g);position:relative;cursor:pointer;display:flex;align-items:flex-end;padding:10px;font-weight:700;font-size:16px;line-height:1.2;text-shadow:0 1px 6px #000;transition:transform .2s}
+.card:hover,.card:focus-visible{transform:scale(1.07);z-index:2;outline:2px solid #fff}
+.grid{display:flex;flex-wrap:wrap;gap:10px;padding:0 4%}
+.empty{padding:40px 4%;color:var(--mut)}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+.modal.open{display:flex}
+.box{background:#181818;border-radius:8px;width:min(680px,100%);max-height:90vh;overflow:auto}
+.top{height:260px;background:linear-gradient(to top,#181818,#0000 60%),var(--g);position:relative;display:flex;align-items:flex-end;padding:20px}
+.top h3{font-size:32px;margin:0}
+.x{position:absolute;right:12px;top:12px;background:#181818;color:#fff;border:0;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer}
+.body{padding:8px 20px 24px}
+.meta{color:var(--mut);font-size:14px;margin:6px 0 12px}.meta b{color:#46d369}
+.body p{line-height:1.5}
+.player{display:none;background:#000;height:220px;border-radius:6px;align-items:center;justify-content:center;color:var(--mut);margin-bottom:14px}
+footer{padding:40px 4%;color:var(--mut);font-size:13px}
+.who{position:fixed;inset:0;z-index:30;background:#141414;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px}
+.who h1{font-weight:400;margin:0}.pfs{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+.pf{background:none;border:0;color:var(--mut);cursor:pointer;font-size:16px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.pf span{width:104px;height:104px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:700;color:#fff}
+.pf:hover,.pf:focus-visible{color:#fff}.pf:hover span,.pf:focus-visible span{outline:3px solid #fff}
+#av{margin-left:8px;width:30px;height:30px;border-radius:4px;font-weight:700;color:#fff;background:#555}
+.bar{position:absolute;left:0;bottom:0;height:4px;background:var(--red);border-radius:0 0 0 6px}
+.btn.info{display:inline-block}
+@media(max-width:600px){.card{width:120px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+<nav id="nav"><span class="logo">STREAMFLIX</span>
+<button data-v="home" class="on">Home</button><button data-v="list">My List</button>
+<input id="q" type="search" placeholder="Search titles" aria-label="Search titles"><button id="av" onclick="showWho()" aria-label="Switch profile"></button></nav>
+<div class="who" id="who"><h1>Who's watching?</h1><div class="pfs">
+<button class="pf" onclick="pick(0)"><span style="background:#e50914">A</span>Ava</button>
+<button class="pf" onclick="pick(1)"><span style="background:#2a7de1">B</span>Ben</button>
+<button class="pf" onclick="pick(2)"><span style="background:#d99a00">K</span>Kids</button>
+<button class="pf" onclick="pick(3)"><span style="background:#2e9e4f">G</span>Guest</button>
+</div></div>
+<main id="app"></main>
+<footer>Streamflix is a demo. All titles are fictional.</footer>
+<div class="modal" id="m"><div class="box" id="box"></div></div>
+<script>
+const G=["Drama","Thriller","Sci-Fi","Comedy","Action"];
+const T=[
+["Midnight Harbor","Thriller",2024,"16+","2h 4m","A night-shift dockworker finds a ledger that names every powerful person in the city."],
+["Echo Valley","Drama",2023,"13+","8 episodes","Four siblings return to the family farm and the secrets buried under it."],
+["Orbit Nine","Sci-Fi",2025,"13+","2h 11m","A repair crew on a failing station has nine hours to reach the last lifeboat."],
+["The Long Laugh","Comedy",2022,"PG","1h 38m","A retired clown agrees to one more show for a very tough crowd."],
+["Iron Meridian","Action",2024,"16+","1h 56m","A courier must cross a closed border in 24 hours with a package nobody can open."],
+["Paper Moons","Drama",2021,"PG","1h 49m","Two pen pals plan to meet after ten years of letters."],
+["Static","Thriller",2025,"18+","6 episodes","A radio host starts receiving calls from a town that was never built."],
+["Neon Orchard","Sci-Fi",2023,"13+","10 episodes","In a city of vertical farms, one gardener grows something illegal: a seed."],
+["Roommates Anonymous","Comedy",2024,"13+","12 episodes","Five strangers share one flat and one very loud secret."],
+["Red Canyon Run","Action",2022,"16+","2h 2m","A stunt rider is hired for a heist she thinks is a film shoot."],
+["Quiet Tide","Drama",2025,"PG","1h 41m","A lighthouse keeper's daughter takes over when the lamp goes dark."],
+["Glass Signal","Sci-Fi",2024,"16+","2h 15m","A linguist decodes a message that gets clearer every time it repeats."],
+["Last Call at Dawn","Thriller",2023,"16+","8 episodes","A bartender hears a confession. By morning, the speaker is missing."],
+["Cheap Seats","Comedy",2021,"PG","1h 33m","A losing minor-league team hires a mascot who won't stop winning."],
+["Blackwater Pass","Action",2025,"18+","2h 8m","Rangers hold a mountain road against an enemy that knows their names."],
+["Salt & Ember","Drama",2022,"13+","10 episodes","A chef rebuilds her family's restaurant one recipe at a time."]
+].map((t,i)=>({id:i,title:t[0],genre:t[1],year:t[2],rating:t[3],len:t[4],desc:t[5],
+ g:`linear-gradient(${(i*47)%360}deg,hsl(${(i*57)%360},65%,32%),hsl(${(i*57+60)%360},70%,14%))`}));
+const P=[["Ava","#e50914"],["Ben","#2a7de1"],["Kids","#d99a00"],["Guest","#2e9e4f"]];
+let D={};try{D=JSON.parse(localStorage.getItem("sf-data")||"{}")}catch(e){}
+let me=null,list=[],prog={},vurl=null;
+const save=()=>{if(me===null)return;D[me]={list,prog};try{localStorage.setItem("sf-data",JSON.stringify(D))}catch(e){}};
+function pick(i){me=i;const d=D[i]||{};list=d.list||[];prog=d.prog||{};$("#who").style.display="none";$("#av").style.background=P[i][1];$("#av").textContent=P[i][0][0];render()}
+function showWho(){closeM();$("#who").style.display="flex"}
+function playT(id){
+ if(!vurl){$("#box input[type=file]").click();return}
+ const pl=$("#pl");pl.style.cssText="display:block;height:auto;aspect-ratio:16/9";
+ pl.innerHTML='<video controls autoplay playsinline style="width:100%;height:100%;border-radius:6px"></video>';
+ const v=pl.firstChild;v.src=vurl;
+ v.onloadedmetadata=()=>{const p=prog[id];if(p>0&&p<97)v.currentTime=v.duration*p/100};
+ v.ontimeupdate=()=>{if(v.duration){prog[id]=Math.max(1,Math.round(v.currentTime/v.duration*100));if(Math.round(v.currentTime)%5===0)save()}};
+ v.onended=()=>{prog[id]=100;save()};
+ v.onpause=save;
+ v.onerror=()=>{pl.style.cssText="display:flex;height:120px";pl.textContent="This file couldn't be played. Try an MP4 (H.264).";vurl=null};
+}
+function loadF(id,f){if(!f)return;vurl=URL.createObjectURL(f);playT(id)}
+let view="home",query="";
+const $=s=>document.querySelector(s);
+const card=t=>`<div class="card" tabindex="0" style="--g:${t.g}" onclick="openM(${t.id})" onkeydown="if(event.key==='Enter')openM(${t.id})">${t.title}${prog[t.id]?`<i class="bar" style="width:${prog[t.id]}%"></i>`:""}</div>`;
+const row=(h,a)=>a.length?`<h2>${h}</h2><div class="row">${a.map(card).join("")}</div>`:"";
+function render(){
+ const app=$("#app");
+ if(query){const r=T.filter(t=>(t.title+t.genre).toLowerCase().includes(query));
+  app.innerHTML=`<h2 style="margin-top:20px">Results for "${query.replace(/</g,"&lt;")}"</h2>`+(r.length?`<div class="grid">${r.map(card).join("")}</div>`:`<div class="empty">No titles match. Try a genre like Drama or Sci-Fi.</div>`);return}
+ if(view==="list"){const r=T.filter(t=>list.includes(t.id));
+  app.innerHTML=`<h2 style="margin-top:20px">My List</h2>`+(r.length?`<div class="grid">${r.map(card).join("")}</div>`:`<div class="empty">Your list is empty. Open a title and choose Add to My List.</div>`);return}
+ const f=T[2];
+ app.innerHTML=`<section class="hero" style="--g:${f.g}"><div><h1>${f.title}</h1><p>${f.desc}</p>
+ <button class="btn play" onclick="openM(${f.id},true)">Play</button><button class="btn info" onclick="openM(${f.id})">More info</button></div></section>`
+ +row("Continue watching",T.filter(t=>prog[t.id]>0&&prog[t.id]<97))+row("Trending now",[...T].sort((a,b)=>b.year-a.year).slice(0,8))
+ +(list.length?row("My List",T.filter(t=>list.includes(t.id))):"")
+ +G.map(g=>row(g,T.filter(t=>t.genre===g))).join("");
+}
+function openM(id,play){
+ const t=T[id],on=list.includes(id);
+ $("#box").innerHTML=`<div class="top" style="--g:${t.g}"><button class="x" onclick="closeM()" aria-label="Close">✕</button><h3>${t.title}</h3></div>
+ <div class="body"><div class="player" id="pl"></div>
+ <button class="btn play" onclick="playT(${id})">${prog[id]>0&&prog[id]<97?"Resume":"Play"}</button>
+ <label class="btn info">Choose video file<input type="file" accept="video/*" hidden onchange="loadF(${id},this.files[0])"></label>
+ <button class="btn info" onclick="toggle(${id})">${on?"Remove from My List":"Add to My List"}</button>
+ <div class="meta"><b>${88+(id*7)%11}% match</b> &nbsp;${t.year} &nbsp;${t.rating} &nbsp;${t.len} &nbsp;${t.genre}</div><p>${t.desc}</p></div>`;
+ $("#m").classList.add("open");if(play)playT(id);
+}
+function closeM(){const v=$("#pl video");if(v)v.pause();$("#m").classList.remove("open");render()}
+function toggle(id){list=list.includes(id)?list.filter(x=>x!==id):[...list,id];save();openM(id);render()}
+$("#m").onclick=e=>{if(e.target.id==="m")closeM()};
+document.onkeydown=e=>{if(e.key==="Escape")closeM()};
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{view=b.dataset.v;query="";$("#q").value="";document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));render()});
+$("#q").oninput=e=>{query=e.target.value.trim().toLowerCase();render()};
+onscroll=()=>$("#nav").classList.toggle("solid",scrollY>40);
+render();
+</script>
+</body>
+</html>
